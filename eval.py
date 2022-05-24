@@ -20,8 +20,6 @@ def eval_pesq(fs, clean, denoised):
     ref = clean
     deg = denoised
     rate = fs
-    print(deg.shape)
-    exit()
     if rate == 16000:
         return pesq(rate, ref, deg, 'wb')
     elif rate == 8000:
