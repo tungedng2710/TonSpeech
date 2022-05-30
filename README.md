@@ -7,9 +7,13 @@ Audio processing project
 * Ubuntu 18 or higher
   
 (Optional) Create your virtual enviroment via script <br />
-```python3 -m venv [your_venv_name]```<br />
+```bat 
+python3 -m venv [your_venv_name]
+```
 then activate it <br />
-```source [your_venv_name]/bin/activate``` </br>
+```bat
+source [your_venv_name]/bin/activate
+``` 
 
 **Install requirements** <br />
 In your terminal, run <br />
