@@ -9,7 +9,7 @@ from torchaudio.transforms import Resample
 
 def get_arg():
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--down_sample', type=bool, help='down sample rate into 16k Hz')
+    parser.add_argument('--down_sample', type=int, help='down sample rate into 16k Hz')
     parser.add_argument('--clean', type=str, help='path/to/clean/voice')
     parser.add_argument('--denoised', type=str, help='path/to/denoised/voice')
     parser.add_argument('--metric', type=str, help='pesq or stoi', default='pesq')
@@ -63,8 +63,11 @@ def eval_stoi(fs, clean, denoised):
 def run_eval():
     # Get the test sample
     arg = get_arg()
-    print(arg.down_sample)
-    clean, fs = load_sample(path=arg.clean, down_sample=arg.down_sample)
+    if arg.down_sample==1:
+        down_sample = True
+    else:
+        down_sample = False
+    clean, fs = load_sample(path=arg.clean, down_sample=down_sample)
     denoised, fs = load_sample(arg.denoised, down_sample=arg.down_sample)
     min_length = min(clean.shape[0], denoised.shape[0])
     clean = clean[:min_length]
