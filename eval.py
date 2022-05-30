@@ -1,16 +1,41 @@
 from scipy.io import wavfile
 from pesq import pesq   
-import soundfile as sf
 from pystoi import stoi
 import argparse 
-import os
+
+import torch
+import torchaudio
+from torchaudio.transforms import Resample
 
 def get_arg():
     parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--down_sample', type=bool, help='down sample rate into 16k Hz')
     parser.add_argument('--clean', type=str, help='path/to/clean/voice')
     parser.add_argument('--denoised', type=str, help='path/to/denoised/voice')
     parser.add_argument('--metric', type=str, help='pesq or stoi', default='pesq')
     return parser.parse_args()
+
+def load_sample(path: str = None,
+                down_sample: bool = False):
+    """
+    path: path/to/your/audio/file
+    """
+    assert path is not None
+
+    signal, rate = torchaudio.load(path)
+
+    if down_sample:
+        print("Changing sample rate to 16k Hz...")
+        downsampler = Resample(orig_freq=rate, new_freq=16000)
+        downsampled_signal = downsampler(signal.view(1, -1))
+        signal = downsampled_signal
+        rate = 16000
+        print("Sample rate changed!")
+    else:
+        print("Warning: sample rate = ", rate)
+
+    signal = torch.flatten(signal).numpy()
+    return signal, rate
 
 def eval_pesq(fs, clean, denoised):
     '''
@@ -36,9 +61,16 @@ def eval_stoi(fs, clean, denoised):
     return stoi(clean, denoised, fs, extended=False)
 
 def run_eval():
+    # Get the test sample
     arg = get_arg()
-    fs, clean = wavfile.read(arg.clean)
-    fs, denoised = wavfile.read(arg.denoised)
+    print(arg.down_sample)
+    clean, fs = load_sample(path=arg.clean, down_sample=arg.down_sample)
+    denoised, fs = load_sample(arg.denoised, down_sample=arg.down_sample)
+    min_length = min(clean.shape[0], denoised.shape[0])
+    clean = clean[:min_length]
+    denoised = denoised[:min_length]
+
+    # Print the result to console
     print("-----------------------------------------------------------------")
     print("|  Clean voice: ", arg.clean)
     print("|  Denoised voice: ", arg.denoised)

@@ -1,4 +1,5 @@
 python eval.py \
+    --down_sample False \
     --metric pesq \
-    --clean ./data/voice-bank/clean_testset_wav/p232_003.wav \
-    --denoised ./data/voice-bank/noisy_testset_wav/p232_003.wav
+    --clean /home/thutt36/tungn197/TonSpeech/data/new_samples/clear_sample.mp3\
+    --denoised /home/thutt36/tungn197/TonSpeech/data/new_samples/raw/result_test/keyboard/keyboard_mic_denoised.wav
