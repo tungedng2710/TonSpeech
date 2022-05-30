@@ -13,9 +13,11 @@ then activate it <br />
 
 **Install requirements** <br />
 In your terminal, run <br />
-``` git clone https://github.com/tungedng2710/TonSpeech.git```<br />
-``` cd TonSpeech ``` <br />
-``` pip install -r requirements.txt```
+```bat 
+git clone https://github.com/tungedng2710/TonSpeech.git
+cd TonSpeech 
+pip install -r requirements.txt
+```
 
 
 ## Evaluation on Noise suppression task
