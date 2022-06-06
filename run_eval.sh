@@ -1,6 +1,6 @@
 python eval.py \
-    --batch_size -1 \
+    --trimed_duration 10 \
     --down_sample 1 \
     --metric pesq \
-    --clean path/to/clean/audio/file \
-    --denoised path/to/denoised/audio/file
+    --clean ./exp/bug_audio_clean.mp3 \
+    --denoised ./exp/download_1_3.mp3

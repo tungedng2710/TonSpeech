@@ -14,7 +14,7 @@ def get_arg():
     parser.add_argument('--clean', type=str, help='path/to/clean/voice')
     parser.add_argument('--denoised', type=str, help='path/to/denoised/voice')
     parser.add_argument('--metric', type=str, help='pesq or stoi', default='pesq')
-    parser.add_argument('--batch_size', type=int, help='pesq or stoi', default=-1)
+    parser.add_argument('--trimed_duration', type=int, default=-1)
     return parser.parse_args()
 
 def load_sample(path: str = None,
@@ -23,7 +23,6 @@ def load_sample(path: str = None,
     path: path/to/your/audio/file
     """
     assert path is not None
-
     signal, rate = torchaudio.load(path)
 
     if down_sample:
@@ -38,36 +37,48 @@ def load_sample(path: str = None,
     signal = torch.flatten(signal).numpy()
     return signal, rate
 
-def get_batches(data, batch_size):
+def get_batches(data, rate, duration):
+    total_duration = len(data)/rate
+    if duration >= total_duration:
+        duration = total_duration
+    batch_size = rate * duration
     batches = []
-    for i in range(0,len(data),batch_size):
-        if len(data) >= batch_size:
+    remain_length = len(data)
+    for i in range(0, len(data), batch_size):
+        remain_length = remain_length - batch_size
+        if remain_length >= batch_size:
             batches.append(data[i:i+batch_size])
         else:
-            pass
+            batches.append(data[i:])
+            break
     return batches
 
 def eval_pesq(fs: int = 16000, 
               clean = None, 
               denoised = None,
-              batch_size = None):
+              trimed_duration = -1):
     '''
+    fs: sample rate
     clean: ideal audio file
     denoised: noisy voice after performing speech enhancement
+    trimed_duration: max duration for each batch 
     '''
     ref = clean
     deg = denoised
     rate = fs
-    if batch_size is not None:
+    if trimed_duration != -1:
         scores = []
-        refs = get_batches(ref, batch_size)
-        degs = get_batches(deg, batch_size)
+        refs = get_batches(ref, rate, trimed_duration)
+        degs = get_batches(deg, rate, trimed_duration)
         for i in tqdm(range(len(refs))):
             try:
                 scores.append(pesq(rate, refs[i], degs[i], 'wb'))
+                # print("Batch %d: pesq score: %f", i, scores[i])
             except:
-                pass
-        return np.array(scores).mean()
+                print("Something wrong!")
+                print(refs[i].shape)
+                print(degs[i].shape)
+        return sum(scores)/len(scores)
     else:
         if rate == 16000:
             return pesq(rate, ref, deg, 'wb')
@@ -87,10 +98,7 @@ def eval_stoi(fs, clean, denoised):
 def run_eval():
     # Get the test sample
     arg = get_arg()
-    if arg.batch_size == -1:
-        batch_size = None
-    else:
-        batch_size = arg.batch_size
+    trimed_duration = arg.trimed_duration
     if arg.down_sample == 1:
         down_sample = True
     else:
@@ -108,7 +116,7 @@ def run_eval():
     print("Denoised voice: ", arg.denoised)
     if arg.metric == 'pesq':
         print("Calculating PESQ score...")
-        print("Done! PESQ score: ", eval_pesq(fs, clean, denoised, batch_size))
+        print("Done! PESQ score: ", eval_pesq(fs, clean, denoised, trimed_duration))
     elif arg.metric == 'stoi':
         print("Evaluation with STOI metric is being maintained, please use PESQ instead")
         # print("|  STOI score: ", eval_stoi(fs, clean, denoised))
