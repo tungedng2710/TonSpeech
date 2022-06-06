@@ -1,8 +1,8 @@
 from pesq import pesq   
 from pystoi import stoi
 import argparse 
-import numpy as np
 from tqdm import tqdm
+import os
 
 import torch
 import torchaudio
@@ -20,14 +20,21 @@ def get_arg():
 def load_sample(path: str = None,
                 down_sample: bool = False):
     """
-    path: path/to/your/audio/file
+    path (str): path/to/your/audio/file
+    down_sample (bool): change sample rate into 16 kHz
     """
     assert path is not None
     signal, rate = torchaudio.load(path)
+    if len(signal) == 2:
+        print("Warning: {fname} is stereo audio".format(fname = os.path.basename(path)))
+        print("Converting to mono audio...")
+        signal = signal[0]
+        print("Done! \n")
 
     if down_sample:
-        if len(signal) > 1:
-            signal = signal[0]
+        if len(signal) == 2:
+            sshape = signal.shape
+            signal = torch.reshape(signal, (1, sshape[0]*sshape[1]))
         downsampler = Resample(orig_freq=rate, new_freq=16000)
         # downsampled_signal = downsampler(signal.view(1, -1))
         downsampled_signal = downsampler(signal)
@@ -40,6 +47,12 @@ def load_sample(path: str = None,
     return signal, rate
 
 def get_batches(data, rate, duration):
+    '''
+    split audio data into batches
+    data: (numpy.ndarray): signal vector of audio file
+    rate: (int): sample frequency (example: 16000 is equivalent to 16kHz)
+    duration: (int): duration of batch audio (seconds)
+    '''
     total_duration = len(data)/rate
     if duration >= total_duration:
         duration = total_duration
@@ -107,7 +120,7 @@ def run_eval():
     clean, fs = load_sample(path=arg.clean, down_sample=down_sample)
     denoised, fs = load_sample(arg.denoised, down_sample=down_sample)
 
-    min_length = min(clean.shape[0], denoised.shape[0])
+    min_length = min(len(clean), len(denoised))
     clean = clean[:min_length]
     denoised = denoised[:min_length]
 
