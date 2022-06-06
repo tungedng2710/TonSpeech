@@ -14,7 +14,7 @@ def get_arg():
     parser.add_argument('--clean', type=str, help='path/to/clean/voice')
     parser.add_argument('--denoised', type=str, help='path/to/denoised/voice')
     parser.add_argument('--metric', type=str, help='pesq or stoi', default='pesq')
-    parser.add_argument('--trimed_duration', type=int, default=-1)
+    parser.add_argument('--trimmed_duration', type=int, default=-1)
     return parser.parse_args()
 
 def load_sample(path: str = None,
@@ -56,28 +56,28 @@ def get_batches(data, rate, duration):
 def eval_pesq(fs: int = 16000, 
               clean = None, 
               denoised = None,
-              trimed_duration = -1):
+              trimmed_duration = -1):
     '''
     fs: sample rate
     clean: ideal audio file
     denoised: noisy voice after performing speech enhancement
-    trimed_duration: max duration for each batch 
+    trimmed_duration: max duration for each batch 
     '''
     ref = clean
     deg = denoised
     rate = fs
-    if trimed_duration != -1:
+    if trimmed_duration != -1:
         scores = []
-        refs = get_batches(ref, rate, trimed_duration)
-        degs = get_batches(deg, rate, trimed_duration)
+        refs = get_batches(ref, rate, trimmed_duration)
+        degs = get_batches(deg, rate, trimmed_duration)
         for i in tqdm(range(len(refs))):
             try:
                 scores.append(pesq(rate, refs[i], degs[i], 'wb'))
                 # print("Batch %d: pesq score: %f", i, scores[i])
             except:
                 print("Something wrong!")
-                print(refs[i].shape)
-                print(degs[i].shape)
+                # print(refs[i].shape)
+                # print(refs[i].shape)
         return sum(scores)/len(scores)
     else:
         if rate == 16000:
@@ -98,7 +98,7 @@ def eval_stoi(fs, clean, denoised):
 def run_eval():
     # Get the test sample
     arg = get_arg()
-    trimed_duration = arg.trimed_duration
+    trimmed_duration = arg.trimmed_duration
     if arg.down_sample == 1:
         down_sample = True
     else:
@@ -116,7 +116,7 @@ def run_eval():
     print("Denoised voice: ", arg.denoised)
     if arg.metric == 'pesq':
         print("Calculating PESQ score...")
-        print("Done! PESQ score: ", eval_pesq(fs, clean, denoised, trimed_duration))
+        print("Done! PESQ score: ", eval_pesq(fs, clean, denoised, trimmed_duration))
     elif arg.metric == 'stoi':
         print("Evaluation with STOI metric is being maintained, please use PESQ instead")
         # print("|  STOI score: ", eval_stoi(fs, clean, denoised))

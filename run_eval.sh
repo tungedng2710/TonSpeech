@@ -1,5 +1,5 @@
 python eval.py \
-    --trimed_duration 10 \
+    --trimmed_duration -1 \
     --down_sample 1 \
     --metric pesq \
     --clean ./exp/bug_audio_clean.mp3 \
