@@ -26,11 +26,13 @@ def load_sample(path: str = None,
     signal, rate = torchaudio.load(path)
 
     if down_sample:
+        if len(signal) > 1:
+            signal = signal[0]
         downsampler = Resample(orig_freq=rate, new_freq=16000)
-        downsampled_signal = downsampler(signal.view(1, -1))
+        # downsampled_signal = downsampler(signal.view(1, -1))
+        downsampled_signal = downsampler(signal)
         signal = downsampled_signal
         rate = 16000
-        # print("Sample rate changed into 16kHz!")
     else:
         print("Warning: sample rate = ", rate)
 
@@ -76,8 +78,6 @@ def eval_pesq(fs: int = 16000,
                 # print("Batch %d: pesq score: %f", i, scores[i])
             except:
                 print("Something wrong!")
-                # print(refs[i].shape)
-                # print(refs[i].shape)
         return sum(scores)/len(scores)
     else:
         if rate == 16000:
