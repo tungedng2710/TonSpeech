@@ -31,6 +31,7 @@ PESQ and STOI are currently supported metrics to evaluate the quality of denoisi
 ./eval.sh
 ```
 Options:<br />
+* ```--trimmed_duration```: (optional for long audio) length of sample batch (seconds), default value is ```-1``` (no trimming) 
 * ```--down_sample```: 1 (True) or 0 (False)
 * ```--metric```: ```pesq``` or ```stoi```. For ```pesq```, please make sure that the sample rate of the given audio file is 8k (for narrow band) or 16k (for wide band, wide band is default option). 
 * ```--clean```: path to the clean audio file (target)
