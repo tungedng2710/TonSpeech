@@ -1,140 +1,99 @@
-from pesq import pesq   
-from pystoi import stoi
+# Copyright (c) 2022 TonAI Research, MetaTon
+# Author: Tung Ng
+# Our GitHub: https://github.com/MetaTon-AI-Research
+
 import argparse 
-from tqdm import tqdm
 import os
+from eval_utils import load_sample, eval_pesq, eval_stoi
+import pandas as pd
+from tqdm import tqdm
 
-import torch
-import torchaudio
-from torchaudio.transforms import Resample
-
-def get_arg():
+def get_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--eval_on_dataset', type=int, help='0: single sample; 1: dataset', default=0)
     parser.add_argument('--down_sample', type=int, help='down sample rate into 16k Hz', default=1)
     parser.add_argument('--clean', type=str, help='path/to/clean/voice')
-    parser.add_argument('--denoised', type=str, help='path/to/denoised/voice')
+    parser.add_argument('--denoised', type=str, help='path/to/denoised/voice (single) or folder (dataset)')
     parser.add_argument('--metric', type=str, help='pesq or stoi', default='pesq')
     parser.add_argument('--trimmed_duration', type=int, default=-1)
+    parser.add_argument('--to_csv', type=int, help='save the results to csv file', default=0)
+    parser.add_argument('--verbose', type=int, help='show the progress', default=1)
+    
     return parser.parse_args()
 
-def load_sample(path: str = None,
-                down_sample: bool = False):
-    """
-    path (str): path/to/your/audio/file
-    down_sample (bool): change sample rate into 16 kHz
-    """
-    assert path is not None
-    signal, rate = torchaudio.load(path)
-    if len(signal) == 2:
-        print("Warning: {fname} is stereo audio".format(fname = os.path.basename(path)))
-        print("Converting to mono audio...")
-        signal = signal[0]
-        print("Done! \n")
-
-    if down_sample:
-        if len(signal) == 2:
-            sshape = signal.shape
-            signal = torch.reshape(signal, (1, sshape[0]*sshape[1]))
-        downsampler = Resample(orig_freq=rate, new_freq=16000)
-        # downsampled_signal = downsampler(signal.view(1, -1))
-        downsampled_signal = downsampler(signal)
-        signal = downsampled_signal
-        rate = 16000
-    else:
-        print("Warning: sample rate = ", rate)
-
-    signal = torch.flatten(signal).numpy()
-    return signal, rate
-
-def get_batches(data, rate, duration):
-    '''
-    split audio data into batches
-    data: (numpy.ndarray): signal vector of audio file
-    rate: (int): sample frequency (example: 16000 is equivalent to 16kHz)
-    duration: (int): duration of batch audio (seconds)
-    '''
-    total_duration = len(data)/rate
-    if duration >= total_duration:
-        duration = total_duration
-    batch_size = rate * duration
-    batches = []
-    remain_length = len(data)
-    for i in range(0, len(data), batch_size):
-        remain_length = remain_length - batch_size
-        if remain_length >= batch_size:
-            batches.append(data[i:i+batch_size])
-        else:
-            batches.append(data[i:])
-            break
-    return batches
-
-def eval_pesq(fs: int = 16000, 
-              clean = None, 
-              denoised = None,
-              trimmed_duration = -1):
-    '''
-    fs: sample rate
-    clean: ideal audio file
-    denoised: noisy voice after performing speech enhancement
-    trimmed_duration: max duration for each batch 
-    '''
-    ref = clean
-    deg = denoised
-    rate = fs
-    if trimmed_duration != -1:
-        scores = []
-        refs = get_batches(ref, rate, trimmed_duration)
-        degs = get_batches(deg, rate, trimmed_duration)
-        for i in tqdm(range(len(refs))):
-            try:
-                scores.append(pesq(rate, refs[i], degs[i], 'wb'))
-                # print("Batch %d: pesq score: %f", i, scores[i])
-            except:
-                print("Something wrong!")
-        return sum(scores)/len(scores)
-    else:
-        if rate == 16000:
-            return pesq(rate, ref, deg, 'wb')
-        # elif rate == 8000:
-        #     return pesq(rate, ref, deg, 'nb')
-        else:
-            print("|  Please change sample rating into 16k or 8k")
-            return "N/A"
-
-def eval_stoi(fs, clean, denoised):
-    '''
-    clean: ideal audio file
-    denoised: noisy voice after performing speech enhancement
-    '''
-    return stoi(clean, denoised, fs, extended=False)
-
-def run_eval():
-    # Get the test sample
-    arg = get_arg()
-    trimmed_duration = arg.trimmed_duration
-    if arg.down_sample == 1:
+def eval_single_sample(args):
+    trimmed_duration = args.trimmed_duration
+    if args.down_sample == 1:
         down_sample = True
     else:
         down_sample = False
 
-    clean, fs = load_sample(path=arg.clean, down_sample=down_sample)
-    denoised, fs = load_sample(arg.denoised, down_sample=down_sample)
+    clean, fs = load_sample(path=args.clean, down_sample=down_sample)
+    denoised, fs = load_sample(path=args.denoised, down_sample=down_sample)
 
     min_length = min(len(clean), len(denoised))
     clean = clean[:min_length]
     denoised = denoised[:min_length]
 
     # Print the result to console
-    print("Clean voice: ", arg.clean)
-    print("Denoised voice: ", arg.denoised)
-    if arg.metric == 'pesq':
+    print("Clean voice: ", args.clean)
+    print("Denoised voice: ", args.denoised)
+    if args.metric == 'pesq':
         print("Calculating PESQ score...")
         print("Done! PESQ score: ", eval_pesq(fs, clean, denoised, trimmed_duration))
-    elif arg.metric == 'stoi':
-        print("Evaluation with STOI metric is being maintained, please use PESQ instead")
-        # print("|  STOI score: ", eval_stoi(fs, clean, denoised))
+    elif args.metric == 'stoi':
+        print("|  STOI score: ", eval_stoi(fs, clean, denoised))
     else:
-        print("|  The given metric isn't supported!")
+        print("Metric should be pesq or stoi")
 
-if __name__ == '__main__':
-    run_eval()
+def eval_dataset(args):
+    trimmed_duration = args.trimmed_duration
+    if args.down_sample == 1:
+        down_sample = True
+    else:
+        down_sample = False
+
+    root_dir = args.denoised
+    sample_files = os.listdir(root_dir)
+    clean, fs = load_sample(path=args.clean, down_sample=down_sample)
+    scores = []
+    fnames = []
+
+    for file in tqdm(sample_files):
+        fnames.append(file)
+        fpath = root_dir+'/'+file
+        denoised, fs = load_sample(path=fpath, down_sample=down_sample)
+        min_length = min(len(clean), len(denoised))
+        clean = clean[:min_length]
+        denoised = denoised[:min_length]
+        if args.metric == 'pesq':
+            score = eval_pesq(fs, clean, denoised, trimmed_duration)
+            scores.append(score)
+            # print("{file}: PESQ: {score}".format(file=file, score=score))
+        elif args.metric == 'stoi':
+            score = eval_stoi(fs, clean, denoised)
+            scores.append(score)
+            # print("{file}: STOI: {score}".format(file=file, score=score))
+        else:
+            print("Metric should be pesq or stoi")
+            break
+
+    if args.verbose > 0:
+        for i in range(len(fnames)):
+            print("{file}: PESQ: {score}".format(file=fnames[i], score=scores[i]))
+
+    if args.to_csv == 1:
+        print("Saving result to csv file...")
+        df_dict = {"file_name": fnames,
+                   args.metric+"_score": scores}
+        df = pd.DataFrame(df_dict)
+        saved_name = args.metric+"_results.csv"
+        df.to_csv(saved_name, index=False)
+        print("Done!")
+
+if __name__ == "__main__":
+    args = get_args()
+    if args.eval_on_dataset == 0:
+        eval_single_sample(args)
+    else:
+        eval_dataset(args)
