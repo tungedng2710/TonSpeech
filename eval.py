@@ -69,16 +69,15 @@ def eval_dataset(args):
         if args.metric == 'pesq':
             score = eval_pesq(fs, clean, denoised, trimmed_duration)
             scores.append(score)
-            # print("{file}: PESQ: {score}".format(file=file, score=score))
         elif args.metric == 'stoi':
             score = eval_stoi(fs, clean, denoised)
             scores.append(score)
-            # print("{file}: STOI: {score}".format(file=file, score=score))
         else:
             print("Metric should be pesq or stoi")
             break
 
     if args.verbose > 0:
+        print("---------------------------------------------")
         for i in range(len(fnames)):
             print("{file}: PESQ: {score}".format(file=fnames[i], score=scores[i]))
 
@@ -96,4 +95,6 @@ if __name__ == "__main__":
     if args.eval_on_dataset == 0:
         eval_single_sample(args)
     else:
+        print("Evaluating...")
         eval_dataset(args)
+        print("Done!")
