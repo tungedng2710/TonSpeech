@@ -79,6 +79,7 @@ def eval_dataset(args):
         print("---------------------------------------------")
         for i in range(len(fnames)):
             print("{file}: PESQ: {score}".format(file=fnames[i], score=round(scores[i], 4)))
+        print("Mean PESQ: {score}".format(score=round(sum(scores)/len(scores), 4)))
 
     if args.to_csv == 1:
         print("Saving result to csv file...")
