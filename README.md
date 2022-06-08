@@ -28,7 +28,7 @@ pip install -r requirements.txt
 ## Evaluation on Noise suppression task
 PESQ and STOI are currently supported metrics to evaluate the quality of denoising model. To evaluate test sample, run 
 ```bat
-./eval.sh
+bash run_eval.sh
 ```
 Options:<br />
 * ```--trimmed_duration```: (optional for long audio) length of sample batch (seconds), default value is ```-1``` (no trimming) 
