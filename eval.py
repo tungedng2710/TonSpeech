@@ -40,9 +40,9 @@ def eval_single_sample(args):
     print("Denoised voice: ", args.denoised)
     if args.metric == 'pesq':
         print("Calculating PESQ score...")
-        print("Done! PESQ score: ", eval_pesq(fs, clean, denoised, trimmed_duration))
+        print("PESQ score: ", eval_pesq(fs, clean, denoised, trimmed_duration))
     elif args.metric == 'stoi':
-        print("|  STOI score: ", eval_stoi(fs, clean, denoised))
+        print("STOI score: ", eval_stoi(fs, clean, denoised))
     else:
         print("Metric should be pesq or stoi")
 
@@ -54,11 +54,10 @@ def eval_dataset(args):
         down_sample = False
 
     root_dir = args.denoised
-    sample_files = os.listdir(root_dir)
+    sample_files = sorted(os.listdir(root_dir))
     clean, fs = load_sample(path=args.clean, down_sample=down_sample)
     scores = []
     fnames = []
-
     for file in tqdm(sample_files):
         fnames.append(file)
         fpath = root_dir+'/'+file
@@ -79,7 +78,7 @@ def eval_dataset(args):
     if args.verbose > 0:
         print("---------------------------------------------")
         for i in range(len(fnames)):
-            print("{file}: PESQ: {score}".format(file=fnames[i], score=scores[i]))
+            print("{file}: PESQ: {score}".format(file=fnames[i], score=round(scores[i], 4)))
 
     if args.to_csv == 1:
         print("Saving result to csv file...")
@@ -88,7 +87,6 @@ def eval_dataset(args):
         df = pd.DataFrame(df_dict)
         saved_name = args.metric+"_results.csv"
         df.to_csv(saved_name, index=False)
-        print("Done!")
 
 if __name__ == "__main__":
     args = get_args()
