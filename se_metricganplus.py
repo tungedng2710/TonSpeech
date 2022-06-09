@@ -7,10 +7,17 @@ from speechbrain.pretrained import SpectralMaskEnhancement
 import timeit
 import os
 from tqdm import tqdm
+import argparse
 
-NOISE_PATH = "./exp/noise30s"
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument("--noisy", type=str, help="path/to/noisy/voice/(or the folder of noisy voice)")
+parser.add_argument("--saved_folder", type=str, help="path/to/output/folder", default="metricgan_exp")
+args = parser.parse_args()
 
 def enhance(enhance_model, noise_path):
+    """
+    noise_path should be path to audio file or folder of audio file
+    """
     if os.path.isfile(noise_path):
         noisy = enhance_model.load_audio(noise_path).unsqueeze(0)
         enhanced = enhance_model.enhance_batch(noisy, lengths=torch.tensor([1.]))
@@ -26,16 +33,16 @@ def enhance(enhance_model, noise_path):
             os.remove(file)
 
 if __name__ == "__main__":
-    if not os.path.exists("metricgan_exp"):
-        os.makedirs("metricgan_exp")
+    if not os.path.exists(args.saved_folder):
+        os.makedirs(args.saved_folder)
     start = timeit.default_timer()
     enhance_model = SpectralMaskEnhancement.from_hparams(
         source="speechbrain/metricgan-plus-voicebank",
         savedir="pretrained_models/metricgan-plus-voicebank",
     )
     enhance(enhance_model=enhance_model, 
-            noise_path=NOISE_PATH)
+            noise_path=args.noisy)
     stop = timeit.default_timer()
-    print('Time: ', stop - start)
+    print('Inference time: {t}s'.format(t=round(stop-start, 2)))
 
 
