@@ -1,5 +1,4 @@
 # TonSpeech
-Copyright (c) 2022 TonAI Research <br />
 **Audio processing project**
 
 ## Installation
