@@ -18,18 +18,15 @@ def load_sample(path: str = None,
     assert path is not None
     signal, rate = torchaudio.load(path)
     if len(signal) == 2:
-        print("Warning: {fname} is stereo audio".format(fname = os.path.basename(path)))
+        # print("Warning: {fname} is stereo audio".format(fname = os.path.basename(path)))
         signal = signal[0]
 
     if down_sample:
-        if len(signal) == 2:
-            sshape = signal.shape
-            signal = torch.reshape(signal, (1, sshape[0]*sshape[1]))
-        downsampler = Resample(orig_freq=rate, new_freq=16000)
-        # downsampled_signal = downsampler(signal.view(1, -1))
+        new_rate = 16000
+        downsampler = Resample(orig_freq=rate, new_freq=new_rate)
         downsampled_signal = downsampler(signal)
         signal = downsampled_signal
-        rate = 16000
+        rate = new_rate
     else:
         print("Warning: sample rate = ", rate)
 
@@ -64,7 +61,7 @@ def eval_pesq(fs: int = 16000,
               trimmed_duration = -1):
     '''
     fs: sample rate
-    clean: ideal audio file
+    clean: clean voice
     denoised: noisy voice after performing speech enhancement
     trimmed_duration: max duration for each batch 
     '''
