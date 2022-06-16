@@ -19,7 +19,8 @@ def load_sample(path: str = None,
     signal, rate = torchaudio.load(path)
     if len(signal) == 2:
         # print("Warning: {fname} is stereo audio".format(fname = os.path.basename(path)))
-        signal = signal[0]
+        # signal = signal[0]
+        signal = torch.mean(signal, dim=0).unsqueeze(0) 
 
     if down_sample:
         new_rate = 16000
