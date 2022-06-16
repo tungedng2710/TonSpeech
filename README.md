@@ -33,8 +33,9 @@ Options:<br />
 * ```--trimmed_duration```: (optional for long audio) length of sample batch (seconds), default value is ```-1``` (no trimming) 
 * ```--down_sample```: 1 (True) or 0 (False)
 * ```--metric```: ```pesq``` or ```stoi```. For ```pesq```, please make sure that the sample rate of the given audio file is 8k (for narrow band) or 16k (for wide band, wide band is default option). 
-* ```--clean```: path to the clean audio file (target)
+* ```--clean```: path to the clean audio file (target). If you need to evaluate on Voicebank-DEMAND dataset, it will be the path to clean audio folder.
 * ```--denoised```: path to the audio after being denoised (result of model).
+* ```--eval_on_dataset```: ```0```: run with single audio (denoised-clean); ```1```: compare a clean audio with a folder of different denoised audio; ```2```: eval on Voicebank-DEMAND.
 
 ## Speech Enhancement with MetricGAN+
 Official implementation of MetricGAN+ at this [GitHub link](https://github.com/speechbrain/speechbrain/tree/develop/recipes/Voicebank/enhance/MetricGAN)
@@ -44,3 +45,8 @@ In the terminal, run the script below
 python se_metricganplus.py --noisy [path/to/noisy/audio/or/folder]
 ```
 The given path will be automatically check whether it is a file or folder.
+
+## Other ways to test audio quality
+Currently, **TonSpeech** only supports to evaluate with **PESQ** and **STOI** metric, while other methods are developing. There are some alternative ways that you can try: <br />
+* [ViSQOL](https://github.com/google/visqol) (Virtual Speech Quality Objective Listener): Being developed by Google. Similar to PESQ, ViSQOL evaluate the quality of audio by comparing between reference (clean) and degraded (denoised) audio and then map the result to MOS score.
+* [CSIG,CBAK,COVL](https://github.com/usimarit/semetrics): Popular metrics of Speech Enhancement task on paperswithcode.
