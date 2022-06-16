@@ -11,6 +11,7 @@ from tqdm import tqdm
 def get_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--eval_on_dataset', type=int, help='0: single sample; 1: dataset', default=0)
+    parser.add_argument('--eval_voicebank', type=int, help='0: single sample; 1: voicebank', default=0)
     parser.add_argument('--down_sample', type=int, help='down sample rate into 16k Hz', default=1)
     parser.add_argument('--clean', type=str, help='path/to/clean/voice')
     parser.add_argument('--denoised', type=str, help='path/to/denoised/voice (single) or folder (dataset)')
@@ -89,11 +90,47 @@ def eval_dataset(args):
         saved_name = args.metric+"_results.csv"
         df.to_csv(saved_name, index=False)
 
+def eval_voicebank(args):
+    trimmed_duration = args.trimmed_duration
+    if args.down_sample == 1:
+        down_sample = True
+    else:
+        down_sample = False
+    scores = []
+    fnames = []
+    for file in tqdm(os.listdir(args.clean)):
+        fnames.append(file)
+        denoised_path = args.denoised+'/'+file
+        clean_path = args.clean+'/'+file
+
+        clean, fs = load_sample(path=clean_path, down_sample=down_sample)
+        denoised, fs = load_sample(path=denoised_path, down_sample=down_sample)
+        min_length = min(len(clean), len(denoised))
+        clean = clean[:min_length]
+        denoised = denoised[:min_length]
+        if args.metric == 'pesq':
+            score = eval_pesq(fs, clean, denoised, trimmed_duration)
+            scores.append(score)
+        elif args.metric == 'stoi':
+            score = eval_stoi(fs, clean, denoised)
+            scores.append(score)
+        else:
+            print("Metric should be pesq or stoi")
+            break
+    if args.verbose > 0:
+        print("---------------------------------------------")
+        for i in range(len(fnames)):
+            print("{file}: PESQ: {score}".format(file=fnames[i], score=round(scores[i], 4)))
+        print("Mean PESQ: {score}".format(score=round(sum(scores)/len(scores), 4)))
+
 if __name__ == "__main__":
+    print("Evaluating...")
     args = get_args()
     if args.eval_on_dataset == 0:
         eval_single_sample(args)
-    else:
-        print("Evaluating...")
+    elif args.eval_on_dataset == 1:
         eval_dataset(args)
-        print("Done!")
+    elif args.eval_on_dataset == 2:
+        eval_voicebank(args)
+    else:
+        print("args.eval_on_dataset should be 0, 1 or 2")
