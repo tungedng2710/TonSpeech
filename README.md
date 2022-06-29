@@ -44,8 +44,17 @@ In the terminal, run the script below
 ```bat
 python se_metricganplus.py --noisy [path/to/noisy/audio/or/folder]
 ```
-The given path will be automatically check whether it is a file or folder.
-
+The given path will be automatically check whether it is a file or folder. <br />
+If you need to post-process the output of MetricGAN+ with Perceptual Contrast Stretching ([PCS](https://github.com/RoyChao19477/PCS)), run
+```bat
+python se_pcs.py --noisy [folder/of/metricganplus_results]
+```
+## ONNX model
+**TonSpeech** supports exporting MetricGAN+ to ONNX model by modifying short-time Fourier transform operator (Unfortunately, torch.stft and torch.istft are not supported in current opset version). To export onnx model, just run
+```bash
+python onnx.py
+```
+Dummy input is located in ```data``` folder. Currently, you shouldn't use another dummy input because it is related to the fixed signal length of Fourier transform operator. It will be fixed soon.
 ## Other ways to test audio quality
 Currently, **TonSpeech** only supports to evaluate with **PESQ** and **STOI** metric, while other methods are developing. There are some alternative ways that you can try: <br />
 * [ViSQOL](https://github.com/google/visqol) (Virtual Speech Quality Objective Listener): Being developed by Google. Similar to PESQ, ViSQOL evaluate the quality of audio by comparing between reference (clean) and degraded (denoised) audio and then map the result to MOS score.

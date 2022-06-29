@@ -10,7 +10,7 @@ enhance_model = SpectralMaskEnhancement.from_hparams(
         source="pretrained_models/metricgan-plus-voicebank"
     )
 
-dummy_input = enhance_model.load_audio("data/voice-bank/voice-bank-slr/clean_testset_wav/p232_001.wav")
+dummy_input = enhance_model.load_audio("data/dummy_input.wav")
 dummy_input = dummy_input.unsqueeze(0)
 print("Dummy input shape: ", dummy_input.shape)
 
