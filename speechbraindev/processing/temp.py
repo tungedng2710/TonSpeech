@@ -18,4 +18,3 @@ sig_length = 27861
 istft = istft_extractor(real, imag, length=sig_length)
 
 torch.save(istft, "istft.pt")
-print("======================")
