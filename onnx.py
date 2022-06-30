@@ -1,5 +1,4 @@
 import torch
-import torchaudio
 import warnings
 import onnxruntime
 import numpy as np
