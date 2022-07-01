@@ -131,3 +131,4 @@ dmypy.json
 pretrained_models/m*
 pretrained_models/S*
 *.onnx
+*.pt*

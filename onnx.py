@@ -12,7 +12,9 @@ def to_numpy(tensor):
     return output
 
 if __name__ == "__main__":
-    print("Welcome to TonSpeech")
+    print("|------------------------------|")
+    print("|     Welcome to TonSpeech     |")
+    print("|------------------------------|")
     print("Creating MetricGAN+ model")
     enhance_model = SpectralMaskEnhancement.from_hparams(
         source="speechbrain/metricgan-plus-voicebank",
