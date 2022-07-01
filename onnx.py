@@ -15,18 +15,18 @@ if __name__ == "__main__":
     print("|------------------------------|")
     print("|     Welcome to TonSpeech     |")
     print("|------------------------------|")
-    print("Creating MetricGAN+ model")
+    print("Creating MetricGAN+ model...")
     enhance_model = SpectralMaskEnhancement.from_hparams(
         source="speechbrain/metricgan-plus-voicebank",
         savedir="pretrained_models/metricgan-plus-voicebank",
     )
-    print("Loading dummy input")
+    print("Loading dummy input...")
     dummy_input = enhance_model.load_audio("data/dummy_input.wav")
     dummy_input = dummy_input.unsqueeze(0)
     torch_out = enhance_model(dummy_input)
     os.remove("dummy_input.wav")
     # print(dummy_input.shape)
-    print('Exporting to ONNX Model')
+    print('Exporting to ONNX Model...')
     torch.onnx.export(enhance_model, 
                       dummy_input, 
                       "metricganp.onnx",
