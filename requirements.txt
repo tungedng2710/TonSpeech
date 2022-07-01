@@ -1,4 +1,5 @@
-numpy==1.22.3
+numba==0.55.2
+numpy==1.22.4
 pandas==1.4.2
 pesq==0.0.4
 pystoi==0.3.3
