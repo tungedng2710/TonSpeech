@@ -1,0 +1,1 @@
+/home/thutt36/tungn197/github/TonSpeech/pretrained_models/metricgan-plus-voicebank/custom.py

@@ -17,7 +17,7 @@ if __name__ == "__main__":
     print("|------------------------------|")
     print("Creating MetricGAN+ model...")
     enhance_model = SpectralMaskEnhancement.from_hparams(
-        source="speechbrain/metricgan-plus-voicebank",
+        source="pretrained_models/metricgan-plus-voicebank",
         savedir="pretrained_models/metricgan-plus-voicebank",
     )
     print("Loading dummy input...")
