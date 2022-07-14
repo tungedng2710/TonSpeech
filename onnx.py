@@ -5,7 +5,7 @@ import numpy as np
 import os
 warnings.filterwarnings("ignore")
 
-from speechbraindev.pretrained import SpectralMaskEnhancement
+from src.speechbraindev.pretrained import SpectralMaskEnhancement
 
 def to_numpy(tensor):
     output = tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()

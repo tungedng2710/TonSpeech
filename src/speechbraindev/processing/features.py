@@ -353,7 +353,7 @@ class ISTFT(torch.nn.Module):
 
         # istft = istft_extractor(real, imag, length=27861)
         # exit()
-        os.system("python speechbraindev/processing/temp.py")
+        os.system("python src/speechbraindev/processing/temp.py")
         istft = torch.load("istft.pt")
         # Convert back to (time, time_step, n_channels)
         if len(or_shape) == 5:
