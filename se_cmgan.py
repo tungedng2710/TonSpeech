@@ -1,3 +1,6 @@
+"""
+Official implementation of CMGAN: https://github.com/ruizhecao96/CMGAN/tree/main/src
+"""
 import numpy as np
 import os
 import torchaudio
