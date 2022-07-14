@@ -21,8 +21,8 @@ parser.add_argument("--model_path", type=str, default='pretrained_models/CMGAN/c
 parser.add_argument("--save_tracks", type=str, default=True, help="save predicted tracks or not")
 args = parser.parse_args()
 
-# DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-DEVICE = torch.device("cpu")
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# DEVICE = torch.device("cpu")
 
 @torch.no_grad()
 def enhance_one_track(model, audio_path, saved_dir, cut_len, n_fft=400, hop=100, save_tracks=False):
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     n_fft = 400
     print("Creating CMGAN Model...")
     model = generator.TSCNet(num_channel=64, num_features=n_fft//2+1).to(DEVICE)
-    model.load_state_dict((torch.load(args.model_path)))
+    model.load_state_dict(torch.load(args.model_path, map_location=torch.device('cpu')))
     model.eval()
     if os.path.isfile(args.noisy):
         enhance_one_track(model=model, 

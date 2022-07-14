@@ -37,7 +37,16 @@ Options:<br />
 * ```--denoised```: path to the audio after being denoised (result of model).
 * ```--eval_on_dataset```: ```0```: run with single audio (denoised-clean); ```1```: compare a clean audio with a folder of different denoised audio; ```2```: eval on Voicebank-DEMAND.
 
-## Speech Enhancement with MetricGAN+
+## Speech Enhancement
+### Conformer-based MetricGAN (CMGAN)
+Official implementation of CMGAN at this [GitHub link](https://github.com/ruizhecao96/CMGAN)
+
+In the terminal, run the script below
+```bat
+python se_cmgan.py --noisy [path/to/noisy/audio/file]
+```
+Currently, GPU inference is highly recommended for CMGAN. 
+### MetricGAN+
 Official implementation of MetricGAN+ at this [GitHub link](https://github.com/speechbrain/speechbrain/tree/develop/recipes/Voicebank/enhance/MetricGAN)
 
 In the terminal, run the script below
@@ -45,9 +54,16 @@ In the terminal, run the script below
 python se_metricganplus.py --noisy [path/to/noisy/audio/or/folder]
 ```
 The given path will be automatically check whether it is a file or folder. <br />
-If you need to post-process the output of MetricGAN+ with Perceptual Contrast Stretching ([PCS](https://github.com/RoyChao19477/PCS)), run
+
+### Post-processing PCS
+If you need to post-process the output with Perceptual Contrast Stretching ([PCS](https://github.com/RoyChao19477/PCS)), run
 ```bat
 python se_pcs.py --noisy [folder/of/metricganplus_results]
+```
+
+The output of all methods above will be saved at default path. If you want to modify them, add the argument below to your script:
+```
+--saved_folder [path/to/saved/folder]
 ```
 ## ONNX model
 **TonSpeech** supports exporting MetricGAN+ to ONNX model by modifying short-time Fourier transform operator (Unfortunately, torch.stft and torch.istft are not supported in current opset version). To export onnx model, just run
