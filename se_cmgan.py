@@ -21,6 +21,9 @@ parser.add_argument("--model_path", type=str, default='pretrained_models/CMGAN/c
 parser.add_argument("--save_tracks", type=str, default=True, help="save predicted tracks or not")
 args = parser.parse_args()
 
+# DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+DEVICE = torch.device("cpu")
+
 @torch.no_grad()
 def enhance_one_track(model, audio_path, saved_dir, cut_len, n_fft=400, hop=100, save_tracks=False):
     name = os.path.split(audio_path)[-1]
@@ -29,7 +32,7 @@ def enhance_one_track(model, audio_path, saved_dir, cut_len, n_fft=400, hop=100,
     print(audio_path + "has been loaded!")
     print("Enhancing...")
     assert sr == 16000
-    noisy = noisy.cuda()
+    noisy = noisy.to(DEVICE)
 
     c = torch.sqrt(noisy.size(-1) / torch.sum((noisy ** 2.0), dim=-1))
     noisy = torch.transpose(noisy, 0, 1)
@@ -46,13 +49,13 @@ def enhance_one_track(model, audio_path, saved_dir, cut_len, n_fft=400, hop=100,
             batch_size += 1
         noisy = torch.reshape(noisy, (batch_size, -1))
 
-    noisy_spec = torch.stft(noisy, n_fft, hop, window=torch.hamming_window(n_fft).cuda(), onesided=True)
+    noisy_spec = torch.stft(noisy, n_fft, hop, window=torch.hamming_window(n_fft).to(DEVICE), onesided=True)
     noisy_spec = power_compress(noisy_spec).permute(0, 1, 3, 2)
     est_real, est_imag = model(noisy_spec)
     est_real, est_imag = est_real.permute(0, 1, 3, 2), est_imag.permute(0, 1, 3, 2)
 
     est_spec_uncompress = power_uncompress(est_real, est_imag).squeeze(1)
-    est_audio = torch.istft(est_spec_uncompress, n_fft, hop, window=torch.hamming_window(n_fft).cuda(),
+    est_audio = torch.istft(est_spec_uncompress, n_fft, hop, window=torch.hamming_window(n_fft).to(DEVICE),
                             onesided=True)
     est_audio = est_audio / c
     est_audio = torch.flatten(est_audio)[:length].cpu().numpy()
@@ -72,7 +75,7 @@ if __name__ == "__main__":
     start = timeit.default_timer()
     n_fft = 400
     print("Creating CMGAN Model...")
-    model = generator.TSCNet(num_channel=64, num_features=n_fft//2+1).cuda()
+    model = generator.TSCNet(num_channel=64, num_features=n_fft//2+1).to(DEVICE)
     model.load_state_dict((torch.load(args.model_path)))
     model.eval()
     if os.path.isfile(args.noisy):
