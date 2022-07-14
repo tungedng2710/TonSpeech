@@ -1,5 +1,5 @@
-from models.conformer import ConformerBlock
-from utils import *
+from src.CMGAN.models.conformer import ConformerBlock
+from src.CMGAN.utils import *
 
 
 class DilatedDenseNet(nn.Module):

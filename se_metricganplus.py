@@ -11,7 +11,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument("--noisy", type=str, help="path/to/noisy/voice/(or the folder of noisy voice)")
-parser.add_argument("--saved_folder", type=str, help="path/to/output/folder", default="metricgan_exp")
+parser.add_argument("--saved_folder", type=str, help="path/to/output/folder", default="data/MetricGanp_exp")
 args = parser.parse_args()
 
 def enhance(enhance_model, noise_path):
@@ -33,6 +33,10 @@ def enhance(enhance_model, noise_path):
             os.remove(file)
 
 if __name__ == "__main__":
+    print("+------------------------------------+")
+    print("|              TonSpeech             |")
+    print("| Speech Enhancement with MetricGAN+ |")
+    print("+------------------------------------+")
     if not os.path.exists(args.saved_folder):
         os.makedirs(args.saved_folder)
     start = timeit.default_timer()
