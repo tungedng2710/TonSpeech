@@ -1,5 +1,5 @@
 """
-Official implementation of CMGAN: https://github.com/ruizhecao96/CMGAN/tree/main/src
+Official implementation of CMGAN: https://github.com/ruizhecao96/CMGAN
 """
 import numpy as np
 import os
