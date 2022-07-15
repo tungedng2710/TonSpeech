@@ -29,7 +29,6 @@ class CMGAN_ONNX(nn.Module):
         self.CMGAN.load_state_dict(torch.load(checkpoint_path, map_location=torch.device('cpu')))
         self.CMGAN.to(self.device)
         self.CMGAN.eval()
-        
         self.stft_extractor = tl.STFT(n_fft=n_fft, 
                                       hop_length=hop)
         self.istft_extractor = tl.ISTFT(n_fft=n_fft, 
@@ -52,16 +51,22 @@ class CMGAN_ONNX(nn.Module):
             noisy = torch.reshape(noisy, (batch_size, -1))
         stft = self.stft_extractor.forward(noisy.cpu())
         stft = torch.cat(stft, dim=0)
-        stft = torch.movedim(stft, 0, 3)
-        noisy_spec = torch.movedim(stft, 1, 2).to(self.device)
+        noisy_spec = torch.permute(stft, (1, 3, 2, 0))
+    
+        # noisy_spec = power_compress(noisy_spec).permute(0, 1, 3, 2)
+        noisy_spec = torch.stack([noisy_spec[..., 0], noisy_spec[..., 1]], 1).permute(0, 1, 3, 2)
+        noisy_spec = noisy_spec.to(self.device)
 
-        noisy_spec = power_compress(noisy_spec).permute(0, 1, 3, 2)
         est_real, est_imag = self.CMGAN(noisy_spec)
         est_real, est_imag = est_real.permute(0, 1, 3, 2), est_imag.permute(0, 1, 3, 2)
-        est_spec_uncompress = power_uncompress(est_real, est_imag).squeeze(1)
+        # est_spec_uncompress = power_uncompress(est_real, est_imag).squeeze(1)
+        est_spec_uncompress = torch.stack([est_real, est_imag], -1).squeeze(1)
 
-        real = est_spec_uncompress[:,:,:,0:1].movedim(3,0).movedim(3,2)
-        imag = est_spec_uncompress[:,:,:,1:2].movedim(3,0).movedim(3,2)
+        # real = est_spec_uncompress[:,:,:,0:1].movedim(3,0).movedim(3,2)
+        # imag = est_spec_uncompress[:,:,:,1:2].movedim(3,0).movedim(3,2)
+
+        real = est_spec_uncompress[:,:,:,0:1].permute(0, 3, 2, 1)
+        imag = est_spec_uncompress[:,:,:,1:2].permute(0, 3, 2, 1)
         
         est_audio = self.istft_extractor.forward(real, imag, length=noisy.shape[-1])
         est_audio = est_audio / c

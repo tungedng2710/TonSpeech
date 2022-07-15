@@ -61,17 +61,19 @@ def cmgan_to_onnx():
     dummy_input_path = "./data/noisy_sample_16k.wav"
     print("Creating Conformer-based GAN model...")
     cmgan_onnx_model = CMGAN_ONNX(checkpoint_path=checkpoint_path,
-                                  device_id=0)
+                                  device_id=None)
     print("Loading dummy input...")
     dummy_input, sr = torchaudio.load(dummy_input_path)
     assert sr == 16000
     # torch_out = cmgan_onnx_model(dummy_input)
 
+    # exit()
     print('Exporting to ONNX Model...')
     torch.onnx.export(cmgan_onnx_model, 
                       dummy_input, 
                       "cmgan.onnx",
                       export_params=True,
+                      opset_version=11,
                       input_names = ['input'],
                       output_names = ['output'],
                       dynamic_axes={'input' : {0 : 'batch_size'},
