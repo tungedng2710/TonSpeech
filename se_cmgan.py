@@ -32,8 +32,8 @@ def enhance_one_track(model, audio_path, saved_dir, cut_len, n_fft=400, hop=100,
     name = os.path.split(audio_path)[-1]
     print("Loading noisy audio file...")
     noisy, sr = torchaudio.load(audio_path)
-    print(audio_path + "has been loaded!")
-    print("Enhancing...")
+    print(audio_path + " has been loaded!")
+    print("Enhancement in progress...")
     assert sr == 16000
     noisy = noisy.to(DEVICE)
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         enhance_one_track(model=model, 
                         audio_path=args.noisy, 
                         saved_dir=args.saved_folder, 
-                        cut_len=16000*16, 
+                        cut_len=16000*4, 
                         n_fft=n_fft, 
                         hop=n_fft//4, 
                         save_tracks=args.save_tracks)
