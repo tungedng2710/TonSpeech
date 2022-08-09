@@ -9,11 +9,11 @@ import librosa
 import scipy
 import timeit
 
-from eval_utils import load_sample
+from src.eval_utils import load_sample
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--noisy", type=str, help="path/to/noisy/voice/(or the folder of noisy voice)")
-parser.add_argument("--saved_folder", type=str, help="path/to/output/folder", default="pcs_exp")
+parser.add_argument("--noisy", type=str, help="path/to/noisy/voice/", default="data/CMGAN_exp")
+parser.add_argument("--saved_folder", type=str, help="path/to/output/folder", default="data/pcs_exp")
 args = parser.parse_args()
 
 PCS = np.ones(257)      # Perceptual Contrast Stretching
@@ -92,4 +92,4 @@ if __name__ == "__main__":
     start = timeit.default_timer()
     enhance(args)
     stop = timeit.default_timer()
-    print('Inference time: {t}s'.format(t=round(stop-start, 2)))
+    print('Inference time: {t}s'.format(t=stop-start))

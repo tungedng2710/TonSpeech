@@ -81,8 +81,17 @@ def cmgan_to_onnx():
     print("Model has been exported to ONNX!")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, help="cmgan or metricganp", default="cmgan")
+    args = parser.parse_args()
     print("+------------------------------+")
     print("|           TonSpeech          |")
+    print("|     Export to ONNX Model     |")
     print("+------------------------------+")
-
-    cmgan_to_onnx()
+    
+    if args.model == "cmgan":
+        cmgan_to_onnx()
+    elif args.model == "metricganp":
+        metricganp_to_onnx()
+    else:
+        print("Unsupported model was found!")
